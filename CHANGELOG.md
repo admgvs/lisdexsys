@@ -1,0 +1,135 @@
+# Changelog
+
+Todas as mudancas relevantes do ERP MoreiraMix devem ser registradas neste arquivo.
+
+## 2026-06-03
+
+### Adicionado
+
+- Diretriz de continuidade automatica do projeto ERP MoreiraMix, com desenvolvimento autonomo por proxima tarefa logica ate conclusao do MVP.
+- Fundacao multiempresa com tabela `companies`, empresas iniciais, `company_id` nas tabelas operacionais e isolamento por RLS.
+- Perfis operacionais `MASTER`, `ADMIN`, `GERENTE`, `VENDEDOR`, `CAIXA`, `ENTREGADOR` e `CLIENTE`, com telas administrativas de usuarios e permissoes.
+- Estrutura B2B/B2C por canais de venda com `sales_channels`, campos de publicacao/preco por canal em produtos e `sales_channel` em pedidos.
+- Rotas futuras preparadas para `/catalogo/b2b`, `/loja` e `/mobile`, mantendo o ERP como uma unica base PWA.
+- Entrada B2C mobile-first em `/loja`, direcionando clientes para `/catalogo?canal=b2c` apos login sem criar sistema separado.
+- Recuperacao de senha por e-mail em `/recuperar-senha` e redefinicao segura em `/redefinir-senha`.
+- Protecao visual no `AppShell` para redirecionar usuarios sem sessao e bloquear areas sem permissao do perfil.
+- Perfil `GERENTE` deixou de herdar acesso total de `ADMIN` e passou a ter permissoes operacionais explicitas no menu e nas rotas protegidas.
+- Catalogo e carrinho sensiveis ao canal, com validacao de cliente PF/PJ antes da finalizacao.
+- Pedidos, relatorios, detalhe de pedido, Minha conta, PDF e resumo comercial com exibicao do canal de origem.
+- Importacao ZIP de imagens de produtos em `/admin/produtos/importar-imagens`, com logs de importacao e suporte ao bucket `product-images`.
+- Importacao ZIP de imagens ganhou validacoes adicionais contra ZIP malformado, excesso de arquivos, volume descompactado excessivo e caminhos suspeitos.
+- Grade inteligente de produtos em `/admin/produtos/grade`, com edicao em massa, acoes em lote e log de alteracoes.
+- Grade inteligente de produtos ganhou resumo visual antes de salvar e validacao client-side de obrigatorios e numeros nao negativos.
+- Grade inteligente de clientes em `/admin/clientes/grade`, com filtros, edicao em massa, PF/PJ e log de alteracoes.
+- Grade inteligente de clientes ganhou resumo visual antes de salvar e validacao client-side de nome, PF/PJ, UF, frete, status e numeros nao negativos.
+- Estrutura inicial de base de conhecimento com tabelas `knowledge_categories`, `knowledge_articles`, `knowledge_tags` e rotas `/ajuda` e `/admin/base-conhecimento`.
+- Bucket privado `documents` preparado para documentos multiempresa via caminho `documents/{company_id}/...`.
+- Bootstrap administrativo idempotente da base de conhecimento, com categorias, tags e artigos essenciais do MVP por empresa.
+- Modulo de entregas PDV com migration `068_pdv_deliveries`, campos de entrega em `pdv_vendas`, tabelas `deliveries`, `delivery_items` e `delivery_status_logs`.
+- Fechamento do PDV passou a permitir retirada no balcao ou entrega, criando automaticamente fila de entrega quando a venda exige entrega.
+- Rota `/pdv/finalizar-venda` deixou de redirecionar silenciosamente e passou a exibir checkpoint operacional com atalhos para caixa PDV, vendas e entregas.
+- Checkpoint `/pdv/finalizar-venda` passou a exigir perfil operacional de PDV (`admin`, `gerente`, `vendedor` ou `caixa`), removendo exposicao publica da tela.
+- Checkpoint `/pdv/finalizar-venda` passou a filtrar atalhos por perfil, evitando que vendedor ou caixa vejam links para rotas administrativas sem permissao.
+- Rotas `/admin/entregas`, `/admin/entregas/[id]` e `/pdv/finalizar-venda` para Kanban, filtros, separacao, atribuicao de entregador, rota no Maps/WhatsApp e confirmacao de entrega.
+- Healthcheck e checklist de go-live passaram a validar o schema de entregas PDV e o teste operacional de venda com entrega.
+- Painel `/admin/entregas` ganhou exportacao CSV da fila filtrada para auditoria operacional e apoio de rota.
+- Detalhe de entrega ganhou impressao da folha de separacao e copia de rota com fallback resiliente de clipboard.
+- Entregas PDV passaram a expor prioridade, data e hora agendadas na lista, detalhe, CSV e folha de separacao.
+- Migration `069_delivery_status_guardrails.sql` adicionou guardrails no banco para transicoes de entrega e sincronizacao do status da venda PDV.
+- Migration `070_delivery_person_profile.sql` adicionou perfil `entregador`, tela de entregas restrita ao entregador atribuido e RLS dedicada para leitura/atualizacao da propria rota.
+- Visao mobile de entregas PDV adicionou cartoes de rota para entregador, com atalhos para Maps, ligacao, copia de rota e confirmacao no detalhe.
+- Painel `/admin/entregas` ganhou resumo de rotas por entregador para gestores, com carga aberta, separadas, na rua, bairros, valor a receber e roteiro consolidado copiavel para WhatsApp.
+- Listagem e detalhe de `/admin/entregas` passaram a aplicar filtro explicito por `company_id` para gestores e por `delivery_person_id` para entregador, com prioridade, agenda e atribuicao reservadas a gestores.
+- Migration `071_delivery_item_check_guardrails.sql` reforcou a conferencia: quantidade conferida nao passa da solicitada e entrega nao vira `separado`, `saiu_entrega` ou `entregue` com item pendente.
+- Migration `072_delivery_status_log_trigger.sql` passou a registrar historico de mudanca de status de entregas no banco, removendo logs manuais redundantes das telas administrativas.
+- Migration `073_delivery_guardrail_health.sql` e `/api/health` passaram a validar triggers, constraints e funcoes criticas do fluxo de entregas no diagnostico admin.
+- Migration `074_delivery_confirmation_guardrails.sql` passou a exigir recebedor para entrega confirmada e motivo para entrega nao realizada, com a listagem direcionando status finais para o detalhe da entrega.
+- Migration `080_delivery_updated_at_trigger_fix.sql` e reparo manual `repair_delivery_updated_at_triggers.sql` corrigem triggers de `deliveries` e `delivery_items` para usar `updated_at`, removendo o erro `record "new" has no field "atualizado_em"` ao atualizar entregas.
+- Criacao administrativa de usuarios passou a recuperar e atualizar e-mails ja existentes no Supabase Auth ou na tabela `usuarios`, evitando o estado de usuario duplicado/invisivel no multiempresa.
+- Listagem de `/admin/usuarios` passou a carregar por API administrativa server-side e a criacao bloqueia o e-mail do proprio usuario logado, evitando falsa criacao de vendedor com e-mail ja usado pela sessao atual.
+- PDV passou a exibir a empresa ativa no cabecalho do caixa, ao lado do operador, para reduzir risco de venda na empresa errada.
+- PDV passou a liberar selecao de vendedor para operador `caixa` e a exigir vendedor informado a cada nova venda, mantendo a sessao vinculada ao caixa logado.
+- Menu lateral interno do PDV foi reduzido para perfis `vendedor` e `caixa`, exibindo somente PDV, Vendas, Pedidos e NFC-e.
+- Rotas `/admin/vendas` e `/admin/pedidos` foram liberadas para consulta operacional de `vendedor` e `caixa` pelo fluxo do PDV, mantendo separacao, faturamento e alteracao de status restritos a gestao.
+- Consulta de `/admin/vendas` passou a aplicar filtro explicito por empresa para gestao e por participacao (`vendedor_id` ou `usuario_id`) para `vendedor` e `caixa`, reforcando a RLS em bancos parcialmente migrados.
+- Consulta de `/admin/pedidos` passou a aplicar filtro explicito por empresa para gestao e por participacao (`vendedor_id` ou `usuario_id`) para `vendedor` e `caixa`, alinhando Pedidos com Vendas do PDV.
+- Lista `/pedidos`, detalhe `/pedidos/[id]` e PDF server-side do pedido passaram a liberar `caixa` por participacao e a respeitar escopo de empresa para gestores.
+- Separacao `/admin/separacao` e faturamento `/admin/faturamento-entrega` passaram a filtrar e gravar dados por `company_id`, reforcando isolamento multiempresa no funil operacional de pedidos.
+- Cadastro `/admin/produtos` e grade `/admin/produtos/grade` passaram a carregar e gravar produtos, grupos, marcas, principios, parceiros, lotes e logs por `company_id`, mantendo visao multiempresa apenas para `master`.
+- Estoque `/admin/estoque`, Entrada de mercadorias `/admin/entrada-mercadorias`, Inventario `/admin/inventario`, Lotes `/admin/lotes` e Compras `/admin/compras` passaram a filtrar produtos, fornecedores, movimentos, saldos por lote, contas vinculadas e compras por `company_id`, com a migration `079_inventory_purchase_company_guardrails.sql` reforcando as RPCs de movimentacao e recebimento por empresa ativa.
+- Agenda `/admin/agenda` passou a carregar eventos, clientes e responsaveis pela empresa ativa, gravando `company_id` nos novos eventos e protegendo alteracao de status por `id + company_id`.
+- Orçamentos `/admin/orcamentos` passaram a carregar orcamentos e clientes pela empresa ativa, proteger alteracao de status por `id + company_id` e buscar itens do pedido convertido dentro do mesmo escopo.
+- Migration `081_quote_conversion_company_guardrails.sql` e reparo manual `repair_quote_conversion_company_guardrails.sql` reforcam a RPC `converter_orcamento_em_pedido` para validar orcamento, cliente, itens, produtos, pedido e baixa de estoque pelo `company_id` da empresa ativa, com guardrail exposto no `/api/health` e no Diagnostico.
+- Guardrail de conversao de orcamento ajustado para usar `pg_get_functiondef(oid)` em vez de coluna inexistente `pg_proc.definition`, corrigindo erro `42703` ao importar a SQL no Supabase.
+- Avisos de estoque `/admin/avisos-estoque` passaram a carregar, atualizar, exportar e marcar avisos por `company_id`; o endpoint `/api/admin/stock-alerts/notify` tambem passou a limitar envio e atualizacao por empresa do gestor logado.
+- Categorias `/admin/categorias` e transportadoras `/admin/transportadoras` passaram a carregar, cadastrar e atualizar registros pelo `company_id` da empresa ativa.
+- Grupos de clientes `/admin/grupos-clientes` e promocoes `/admin/promocoes` passaram a carregar, cadastrar e atualizar registros pelo `company_id` da empresa ativa; promocoes tambem validam que o produto pertence a empresa ativa e gravam faixas promocionais com `company_id`.
+- Canais de venda `/admin/canais-venda` passaram a calcular metricas de produtos e pedidos apenas dentro do `company_id` da empresa ativa, mantendo a configuracao dos canais como cadastro global.
+- Parceiros / representadas `/admin/parceiros-representadas` passaram a carregar, cadastrar e atualizar registros pelo `company_id` da empresa ativa.
+- Pedidos de parceiros `/admin/pedidos-parceiros` passaram a carregar apenas registros do `company_id` ativo e a migration `082_partner_orders_company_guardrails.sql` reforca as RPCs de criacao, status e dados operacionais com validacao de parceiro, cliente, vendedor, produtos, itens e pedido pela empresa ativa.
+- PDV passou a carregar vendedores por `/api/pdv/sellers`, permitindo que operador `caixa` selecione vendedor da empresa ativa mesmo quando a RLS do navegador limita leitura direta de usuarios.
+- PDV passou a permitir venda em crediario ou forma sem promocao para produtos em oferta, removendo automaticamente o desconto promocional e cobrando o preco normal; formas desse tipo aparecem com fundo amarelo suave e texto dourado no painel de pagamento.
+- Migration `077_pdv_cashier_seller_selection.sql` passou a respeitar o vendedor selecionado pelo operador `caixa` na RPC `criar_venda_pdv` e o PDV agora informa quando o terminal esta aberto para outro operador.
+- Migration `078_pdv_seller_guardrail_health.sql` passou a validar no Diagnostico se a venda PDV exige vendedor para operador `caixa` e se o vendedor pertence a mesma empresa da sessao.
+- Migration `070_delivery_person_profile.sql` passou a normalizar aliases de perfil antes de recriar `usuarios_perfil_check`, e foi adicionado reparo manual `normalize_usuarios_perfil_before_check.sql` para bancos que ja falharam nessa etapa.
+- Migrations antigas `020_cashier_profile.sql`, `058_multi_company_foundation.sql` e o reparo `promote_marcos_to_master.sql` foram alinhados ao conjunto canonico de perfis para evitar falha prematura de `usuarios_perfil_check` em scripts acumulados.
+- Adicionado reparo `00_run_first_unlock_usuarios_perfil_check.sql` para ser executado isoladamente antes de scripts acumulados que ainda recriam `usuarios_perfil_check` com listas antigas.
+- Adicionado preflight geral `00_run_first_general_sql_preflight.sql` para rodar antes de scripts SQL acumulados, normalizando constraints conhecidas e registrando a rotina de salvar reparos em README/CHANGELOG.
+- Adicionado consolidado `restore_full_sql_from_workspace_20260604.sql` para restaurar o SQL perdido no editor do Supabase a partir do preflight geral e das migrations `001` a `077`.
+- Consolidado `restore_full_sql_from_workspace_20260604.sql` regenerado com todas as migrations `001` a `081`, incluindo o guardrail de conversao de orcamento corrigido com `pg_get_functiondef(oid)`.
+- Consolidado `restore_full_sql_from_workspace_20260604.sql` regenerado com todas as migrations `001` a `082`, incluindo guardrails de pedidos de parceiros por `company_id`.
+- Guardrails das migrations de entregas importadas foram validados no Supabase em 04/06/2026, com triggers, constraint de quantidade, funcoes de permissao e conferencia completa retornando ativos.
+- Auditorias `general_schema_repair_audit.sql` e `read_only_42p10_diagnostic.sql` passaram a classificar `supabase_migrations.schema_migrations` inacessivel como `SKIPPED`, evitando falso alerta de perda do schema do ERP quando o SQL Editor nao expuser a tabela interna do Supabase.
+
+### Atualizado
+
+- Dashboard administrativo passou a exibir entregas PDV abertas, separadas e na rua no funil operacional.
+- Script `npm run typecheck` passou a gerar tipos de rotas do Next antes do `tsc`, evitando falso negativo local em `.next/types`.
+- Tabelas auxiliares simples, fiscais e painel geral agora filtram, gravam e excluem registros pelo `company_id` do perfil logado, reforcando o isolamento multiempresa na UI.
+- Condicoes de pagamento, formas de pagamento, contas correntes, cupons, feriados, clientes, fornecedores, follow-ups, PDV e logs operacionais passaram a consumir e persistir cadastros auxiliares explicitamente pela empresa ativa do usuario.
+- Formas de pagamento passaram a tratar codigo ja existente na empresa como atualizacao idempotente do registro, evitando erro bruto de `idx_tabelas_auxiliares_company_tipo_codigo_unique` no cadastro.
+- Formas de pagamento passaram a recuperar erro `23505` do indice `idx_tabelas_auxiliares_company_tipo_codigo_unique`, buscando o registro existente por `company_id + tipo + codigo` e atualizando-o automaticamente.
+- Dashboard, Financeiro, Contas a Receber, Contas a Pagar, PIX e relatorios financeiros/consolidados passaram a filtrar indicadores, titulos, caixa, vendas, compras e movimentos pelo `company_id` da empresa ativa.
+- README documentado com a politica de continuidade automatica, estado consolidado do MVP e rotina de changelog.
+- README ajustado para orientar a aplicacao sequencial de todas as migrations do Supabase e registrar o uso futuro do bucket `documents`.
+- Healthcheck `/api/health` passou a validar os buckets de Storage criticos quando acessado por admin autorizado.
+- Menu lateral do ERP teve textos com codificacao quebrada corrigidos em operacao, tabelas, financeiro, comercial, relatorios e sistema.
+- Menu lateral passou a exibir Minha conta e Central de Ajuda para perfis operacionais compativeis, incluindo gerente e caixa.
+- Cabecalho mobile teve contraste da marca corrigido para leitura em fundo escuro.
+- Checklist de go-live passou a validar se a Central de Ajuda possui artigos publicados.
+- Central de Ajuda passou a consumir marca e cores da Central de Personalizacao.
+- Telas de recuperacao e redefinicao de senha passaram a consumir marca e cores da Central de Personalizacao.
+- Pagina global de rota inexistente passou a usar identidade visual da Central de Personalizacao.
+- Pagina global de erro inesperado passou a usar identidade visual da Central de Personalizacao.
+- Estados de acesso restrito, usuario inativo e perfil ausente passaram a usar identidade visual da Central de Personalizacao.
+- Estado compartilhado de carregamento passou a usar visual premium com variaveis CSS da Central de Personalizacao quando disponiveis.
+- Estado compartilhado de lista vazia passou a usar visual premium com variaveis CSS da Central de Personalizacao quando disponiveis.
+- Alertas compartilhados passaram a usar visual premium com tons semanticos e variaveis CSS da Central de Personalizacao quando disponiveis.
+- Botao compartilhado passou a usar variantes premium conectadas as variaveis CSS da Central de Personalizacao, preservando estilos locais ja definidos nas telas.
+- Campos compartilhados passaram a usar superficie dark premium, labels claros e foco conectado ao destaque da Central de Personalizacao.
+- Configuracoes do Sistema passaram a usar visual dark premium com cards executivos, secoes escuras, toggles tematicos e componentes compartilhados da Central de Personalizacao.
+- Configuracoes da Empresa passaram a usar visual dark premium com superficies escuras, destaque da marca e metadados consistentes com a Central de Personalizacao.
+- Tela de Empresas passou a usar governanca multiempresa em visual dark premium, com metricas executivas, formulario tematico, tabela escura e bloqueio consistente para perfis sem acesso MASTER.
+- Tela de Permissoes passou a usar visual dark premium com matriz de perfis, rotas liberadas, metricas executivas e tabela escura.
+- Tela de Logs passou a documentar auditoria operacional e a usar superficies conectadas as variaveis da Central de Personalizacao.
+- Configuracoes da Empresa passaram a salvar em cascata: formato multiempresa por `company_id`, formato legado por `id` e fallback basico em `companies`.
+- Diagnostico passou a usar visual dark premium, exibir buckets de Storage e validar ficha da empresa no checklist de go-live com fallback em `companies`.
+- Configuracoes do Sistema passaram a salvar em cascata: formato multiempresa por `company_id + chave` e formato legado por `chave`.
+- Central de Personalizacao e `useAppearance` passaram a carregar e salvar com fallback legado por `chave` quando `configuracoes.company_id` ainda nao estiver disponivel.
+- PDV, carrinho, PDF de pedidos e PIX passaram a carregar configuracoes operacionais, aparencia e chave PIX com fallback legado para manter o MVP funcional durante a transicao das migrations multiempresa.
+- Healthcheck e Diagnostico passaram a exibir compatibilidade operacional de implantacao, separando estrutura tecnica de dados-base como empresa ativa, empresa padrao, configuracoes, ficha empresarial e canais de venda.
+- Vendas do PDV `/admin/vendas` passaram a usar visual dark premium, tabela executiva, painel lateral tematico e reimpressao unica conectada a Central de Personalizacao, removendo o bloco legado com codificacao quebrada.
+- Comprovante de reimpressao do PDV passou a usar hierarquia visual de cupom termico, destacando cabecalho, identificacao da venda, itens, detalhes em italico/negrito e totais.
+- Financeiro `/admin/financeiro` passou a usar visual dark premium com atalhos executivos, KPIs financeiros, formulario tematico, abas de recebiveis/pagaveis e tabela escura.
+- Contas a Receber e Contas a Pagar passaram a usar visual dark premium com KPIs, formularios, filtros, tabelas escuras, baixa parcial e badges semanticos de origem/status.
+- Caixa `/admin/caixa` passou a usar visual dark premium com KPIs, sessoes, abertura/fechamento, sangria, suprimento, recebimentos por forma e tabela de movimentos com badges semanticos.
+- Migration `075_cash_session_profile_guardrails.sql` criada para corrigir permissoes de abertura, movimentacao e fechamento de caixa com `current_user_actual_profile`, liberando gestores e restringindo vendedor/caixa a propria sessao.
+- Migration `076_cash_session_guardrail_health.sql`, `/api/health` e Diagnostico passaram a validar funcoes, indices unicos e RLS criticos do fluxo de caixa.
+- Guardrails da migration `076_cash_session_guardrail_health.sql` foram validados no Supabase em 04/06/2026, com todas as checagens de caixa retornando ativas.
+- Painel Geral de Relatorios `/admin/relatorios` passou a usar visual dark premium com atalhos executivos, KPIs comerciais/financeiros/logisticos, barras de desempenho e resumos recentes.
+- Relatorios Financeiros `/admin/relatorios-financeiros` passou a usar visual dark premium com KPIs, aging, fluxo diario, resumos de PIX e tabelas executivas.
+- Relatorios de Vendas `/admin/relatorios-vendas` passou a usar visual dark premium com KPIs comerciais, funil operacional, canais, vendas por dia, ultimos pedidos, ultimas vendas PDV e quebras executivas.
+- Avisos de Estoque `/admin/avisos-estoque` passou a usar visual dark premium com KPIs de demanda, ponte para WhatsApp, filtros, tabela escura e acoes operacionais de notificacao.
+- Diagnostico `/admin/diagnostico` passou a liberar healthcheck profundo tambem para perfil `gerente`, alinhando API, menu e checklist operacional de go-live.
+- Build de producao do Next.js validado apos ajustes de PDV, permissoes operacionais, diagnostico e rotas administrativas do MVP.

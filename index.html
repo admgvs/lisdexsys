@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bolão Vale da Sorte</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <div class="container header-inner">
+      <h1 class="title">🍀 BOLÃO DA MEGA-SENA</h1>
+      <p class="subtitle">GRUPO VALE DA SORTE</p>
+      <div class="meta-grid">
+        <div class="meta-card">
+          <p class="meta-value">R$ 300.000.000</p>
+          <p class="meta-label">💰 Prêmio Estimado</p>
+        </div>
+        <div class="meta-card">
+          <p class="meta-value">24/05/2026 18h</p>
+          <p class="meta-label">🕰️ Fechamento</p>
+        </div>
+        <div class="meta-card">
+          <p class="meta-value">R$ 50,00</p>
+          <p class="meta-label">💰 Valor da Cota</p>
+        </div>
+        <div class="meta-card compact">
+          <p class="meta-value">32.533.957/0001-90</p>
+          <p class="meta-label">📲 Pix - MOREIRAMIX MARKETING</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stat-grid" aria-label="Resumo do bolão">
+      <div class="stat-card">
+        <p id="stat-participants" class="stat-value">0</p>
+        <p class="stat-label">Total Participantes</p>
+      </div>
+      <div class="stat-card">
+        <p id="stat-arrecadado" class="stat-value">R$ 0,00</p>
+        <p class="stat-label">Total Arrecadado</p>
+      </div>
+      <div class="stat-card">
+        <p id="stat-pendente" class="stat-value value-amber">R$ 0,00</p>
+        <p class="stat-label">Total Pendente</p>
+      </div>
+      <div class="stat-card">
+        <p id="stat-cotas" class="stat-value">0</p>
+        <p class="stat-label">Total de Cotas</p>
+      </div>
+    </section>
+
+    <section aria-label="Participantes">
+      <div class="toolbar">
+        <button id="btn-add-participant" type="button" class="btn btn-primary">＋ Adicionar Participante</button>
+        <button id="btn-export" type="button" class="btn btn-soft">⇩ Exportar Lista</button>
+        <button id="btn-whatsapp" type="button" class="btn btn-soft">📋 Copiar p/ WhatsApp</button>
+      </div>
+
+      <div class="filters">
+        <input id="search-input" class="field" type="search" placeholder="Buscar participante..." autocomplete="off">
+        <select id="filter-status" class="select" aria-label="Filtrar participantes por status">
+          <option value="todos">Todos</option>
+          <option value="pago">✅ Pagos</option>
+          <option value="pendente">⭕ Pendentes</option>
+          <option value="credito">💰 Crédito/Haver</option>
+        </select>
+      </div>
+
+      <div class="table-panel stat-card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th class="text-center">Cotas</th>
+                <th class="text-right">Pago</th>
+                <th class="text-right">Falta</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty" hidden>Nenhum participante encontrado.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Avisos do administrador">
+      <div class="panel-header">
+        <h2 class="panel-title">📢 Avisos do Administrador</h2>
+      </div>
+      <div class="panel-body">
+        <div id="admin-announcements-list" class="list-stack"></div>
+        <form id="admin-form" class="inline-form" style="margin-top: 14px;">
+          <input id="admin-message" class="field" type="text" placeholder="Digite o aviso..." maxlength="180" autocomplete="off">
+          <button type="submit" class="btn btn-primary">Publicar</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Mural do bolão">
+      <div class="panel-header emerald">
+        <h2 class="panel-title">💬 Mural do Bolão</h2>
+      </div>
+      <div class="panel-body">
+        <form id="wall-form" class="comment-form">
+          <div class="comment-top">
+            <input id="wall-name" class="field" type="text" placeholder="Seu nome..." maxlength="30" autocomplete="name">
+            <div class="emoji-row" aria-label="Emojis rápidos">
+              <button type="button" class="emoji-btn" data-emoji="✅">✅</button>
+              <button type="button" class="emoji-btn" data-emoji="🍀">🍀</button>
+              <button type="button" class="emoji-btn" data-emoji="💰">💰</button>
+              <button type="button" class="emoji-btn" data-emoji="📌">📌</button>
+              <button type="button" class="emoji-btn" data-emoji="❓">❓</button>
+            </div>
+          </div>
+          <textarea id="wall-message" class="textarea" placeholder="Escreva seu comentário..." maxlength="200"></textarea>
+          <div class="comment-actions" style="margin-top: 10px;">
+            <button type="submit" class="btn btn-emerald" style="flex: 1;">Publicar Comentário</button>
+            <button id="btn-clear-wall" type="button" class="btn btn-muted">Limpar</button>
+          </div>
+        </form>
+        <div id="wall-comments-list" class="list-stack scroll-list"></div>
+        <p id="wall-empty-msg" class="empty" hidden>Nenhum comentário ainda. Seja o primeiro!</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Histórico de atividades">
+      <div class="panel-header blue">
+        <h2 class="panel-title">⏱️ Histórico de Atividades</h2>
+      </div>
+      <div class="panel-body">
+        <div id="activity-history-list" class="scroll-list"></div>
+        <p id="activity-empty-msg" class="empty" hidden>Nenhuma atividade registrada.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Jogos registrados">
+      <div class="panel-header purple">
+        <h2 class="panel-title">🎫 Jogos Registrados</h2>
+      </div>
+      <div class="panel-body">
+        <div class="game-stat-grid">
+          <div class="game-stat-card">
+            <p id="stat-total-jogos" class="game-stat-value value-purple">0</p>
+            <p class="game-stat-label">Total de Jogos</p>
+          </div>
+          <div class="game-stat-card">
+            <p id="stat-jogos-registrados" class="game-stat-value">0</p>
+            <p class="game-stat-label">Jogos Registrados</p>
+          </div>
+          <div class="game-stat-card">
+            <p id="stat-jogos-pendentes" class="game-stat-value value-amber">0</p>
+            <p class="game-stat-label">Jogos Pendentes</p>
+          </div>
+          <div class="game-stat-card">
+            <p id="stat-total-dezenas" class="game-stat-value value-purple">0</p>
+            <p class="game-stat-label">Total de Dezenas</p>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button id="btn-add-game" type="button" class="btn btn-purple">＋ Adicionar Jogo</button>
+          <button id="btn-copy-games" type="button" class="btn btn-purple-soft">📋 Copiar Todos</button>
+        </div>
+
+        <div class="filters">
+          <input id="search-jogo" class="field" type="search" placeholder="Buscar jogo por número..." autocomplete="off">
+          <select id="filter-jogo-status" class="select" aria-label="Filtrar jogos por status">
+            <option value="todos">Todos</option>
+            <option value="registrado">✅ Registrados</option>
+            <option value="pendente">⭕ Pendentes</option>
+          </select>
+        </div>
+
+        <div id="jogos-grid" class="games-grid"></div>
+        <p id="jogos-empty-msg" class="empty" hidden>Nenhum jogo registrado.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="participant-modal" class="modal-overlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="participant-modal-title">
+      <h2 id="participant-modal-title" class="modal-title">Adicionar Participante</h2>
+      <form id="participant-form" class="form-grid">
+        <input type="hidden" id="participant-id">
+        <div>
+          <label class="label" for="f-name">Nome</label>
+          <input id="f-name" class="field" type="text" required maxlength="80" autocomplete="name">
+        </div>
+        <div class="two-col">
+          <div>
+            <label class="label" for="f-cotas">Cotas</label>
+            <input id="f-cotas" class="field" type="number" min="1" max="999" value="1" required>
+          </div>
+          <div>
+            <label class="label" for="f-pago">Valor Pago (R$)</label>
+            <input id="f-pago" class="field" type="number" step="0.01" min="0" value="0" required>
+          </div>
+        </div>
+        <div>
+          <label class="label" for="f-status">Status</label>
+          <select id="f-status" class="select">
+            <option value="pago">✅ Pago</option>
+            <option value="pendente">⭕ Pendente</option>
+            <option value="credito">💰 Crédito/Haver</option>
+          </select>
+        </div>
+        <div>
+          <label class="label" for="f-obs">Observações</label>
+          <input id="f-obs" class="field" type="text" maxlength="120">
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="button" class="btn btn-muted" data-close-modal="participant-modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="jogo-modal" class="modal-overlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="jogo-modal-title">
+      <h2 id="jogo-modal-title" class="modal-title">Adicionar Jogo</h2>
+      <form id="jogo-form" class="form-grid">
+        <input type="hidden" id="jogo-id">
+        <div class="two-col">
+          <div>
+            <label class="label" for="jogo-numero">Número do Jogo</label>
+            <input id="jogo-numero" class="field" type="number" min="1" max="999" required>
+          </div>
+          <div>
+            <label class="label" for="jogo-concurso">Concurso</label>
+            <input id="jogo-concurso" class="field" type="text" maxlength="20" placeholder="Ex.: 2865">
+          </div>
+        </div>
+        <div>
+          <label class="label" for="jogo-data">Data do Sorteio</label>
+          <input id="jogo-data" class="field" type="date">
+        </div>
+        <div>
+          <label class="label" for="jogo-dezenas">Dezenas</label>
+          <input id="jogo-dezenas" class="field" type="text" required placeholder="Ex.: 04 12 23 35 48 59">
+          <p class="help">Use espaços, vírgulas ou hífens. Os números devem estar entre 01 e 60.</p>
+        </div>
+        <div>
+          <label class="label" for="jogo-status">Status</label>
+          <select id="jogo-status" class="select">
+            <option value="pendente">⭕ Pendente</option>
+            <option value="registrado">✅ Registrado</option>
+          </select>
+        </div>
+        <div>
+          <label class="label" for="jogo-obs">Observações</label>
+          <input id="jogo-obs" class="field" type="text" maxlength="120">
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-purple">Salvar</button>
+          <button type="button" class="btn btn-muted" data-close-modal="jogo-modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="modal-overlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <h2 id="confirm-title" class="modal-title">Confirmar exclusão</h2>
+      <p id="confirm-message" class="confirm-text">Deseja excluir este registro?</p>
+      <div class="modal-actions">
+        <button id="confirm-ok" type="button" class="btn btn-danger">Excluir</button>
+        <button id="confirm-cancel" type="button" class="btn btn-muted">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
